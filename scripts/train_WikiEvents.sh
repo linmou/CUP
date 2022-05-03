@@ -3,11 +3,11 @@ STORAGE=experiments/WikiEvents/CL
 python train.py \
   --data_path=data/wikievents/WikiwCoref \
   --dataset=wikievents \
-  --ontology_file=wikievents_ontology.csv \
+  --ontology_file=wikievents_ontology.json \
   --lr=1e-4 \
   --train_batchsize=32 \
   --eval_batchsize=32 \
-  --max_seq_len=256 \
+  --max_seq_len=512 \
   --model=bart \
   --model_name_or_path=./bart-base \
   --CL\

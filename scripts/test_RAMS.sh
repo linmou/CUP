@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-CkptPath=experiments/RAMS/CL
+CkptPath=experiments/RAMS_F1_46.50
 python train.py \
   --data_path=data/RAMS \
   --dataset=RAMS \
@@ -7,7 +7,7 @@ python train.py \
   --lr=1e-4 \
   --train_batchsize=32 \
   --eval_batchsize=32 \
-  --max_seq_len=256 \
+  --max_seq_len=512 \
   --model=bart \
   --model_name_or_path=./bart-base \
   --eval_only \

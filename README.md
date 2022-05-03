@@ -6,10 +6,9 @@ This repository is for CUP: Curriculum Learning based Prompt Tuning for Implicit
 Download RAMS and WikiEvent datasets into ./data folder.
 
 ## Checkpoints
-Our checkpoints are available here.
+Our checkpoints are available [here](https://drive.google.com/drive/folders/1IDAuOWxIlStmgzkmgFsd24Ckx9tJ3QhR).
 
-coming soon...
-
+Download them into ./experiments
 ## Evaluation 
 Evaluate performance on RAMS
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-$CkptPath=experiments/RAMS/CL
+CkptPath=experiments/RAMS/CL
 python train.py \
   --data_path=data/RAMS \
   --dataset=RAMS \
   --ontology_file=aida_ontology_cleaned.csv \
   --lr=1e-4 \
-  --train_batch_size=32 \
-  --eval_batch_size=32 \
+  --train_batchsize=32 \
+  --eval_batchsize=32 \
   --max_seq_len=256 \
   --model=bart \
   --model_name_or_path=./bart-base \

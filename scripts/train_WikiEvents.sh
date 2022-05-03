@@ -5,8 +5,8 @@ python train.py \
   --dataset=wikievents \
   --ontology_file=wikievents_ontology.csv \
   --lr=1e-4 \
-  --train_batch_size=32 \
-  --eval_batch_size=32 \
+  --train_batchsize=32 \
+  --eval_batchsize=32 \
   --max_seq_len=256 \
   --model=bart \
   --model_name_or_path=./bart-base \

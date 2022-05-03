@@ -1,0 +1,88 @@
+evt_mention:scenario_en_kairos_65-E2
+# ::tok A settlement has been reached in a $ 1 - million lawsuit filed by a taxi driver accusing police of negligence after he got caught up in the August 2016 take - down of ISIS - sympathizer Aaron Driver . <ROOT>
+# ::node	1	settle-02	1-2
+# ::node	2	reach-01	4-5
+# ::node	3	monetary-quantity	7-8
+# ::node	4	dollar	7-8
+# ::node	5	5000000	10-11
+# ::node	6	sue-02	11-12
+# ::node	7	file-01	12-13
+# ::node	8	taxi	15-16
+# ::node	9	person	16-17
+# ::node	10	drive-01	16-17
+# ::node	11	accuse-01	17-18
+# ::node	12	police	18-19
+# ::node	13	responsible-02	20-21
+# ::node	14	after	21-22
+# ::node	15	catch-up-04	24-25
+# ::node	16	date-entity	28-30
+# ::node	18	tear-down-05	30-31
+# ::node	19	criminal-organization	34-35
+# ::node	21	favor-01	36-37
+# ::node	22	person	37-39
+# ::node	24	8	28-30
+# ::node	25	2016	28-30
+# ::node	27	name	34-35
+# ::node	28	"ISIS"	34-35
+# ::node	29	name	37-39
+# ::node	31	"Aaron"	37-39
+# ::node	32	"Driver"	37-39
+# ::root	2	reach-01
+# ::edge	reach-01	ARG1	settle-02	2	1	
+# ::edge	monetary-quantity	unit	dollar	3	4	
+# ::edge	monetary-quantity	quant	5000000	3	5	
+# ::edge	sue-02	ARG2	monetary-quantity	6	3	
+# ::edge	reach-01	ARG0	sue-02	2	6	
+# ::edge	sue-02	ARG1-of	file-01	6	7	
+# ::edge	file-01	ARG0	person	7	9	
+# ::edge	person	ARG0-of	drive-01	9	10	
+# ::edge	drive-01	ARG1	taxi	10	8	
+# ::edge	person	ARG0-of	accuse-01	9	11	
+# ::edge	accuse-01	ARG1	police	11	12	
+# ::edge	responsible-02	ARG1	police	13	12	
+# ::edge	accuse-01	ARG2	responsible-02	11	13	
+# ::edge	accuse-01	time	after	11	14	
+# ::edge	after	op1	catch-up-04	14	15	
+# ::edge	catch-up-04	ARG1	person	15	9	
+# ::edge	tear-down-05	time	date-entity	18	16	
+# ::edge	catch-up-04	ARG2	tear-down-05	15	18	
+# ::edge	favor-01	ARG1	criminal-organization	21	19	
+# ::edge	person	ARG0-of	favor-01	22	21	
+# ::edge	tear-down-05	ARG1	person	18	22	
+# ::edge	date-entity	month	8	16	24	
+# ::edge	date-entity	year	2016	16	25	
+# ::edge	criminal-organization	name	name	19	27	
+# ::edge	name	op1	"ISIS"	27	28	
+# ::edge	person	name	name	22	29	
+# ::edge	name	op1	"Aaron"	29	31	
+# ::edge	name	op2	"Driver"	29	32	
+# ::short	{1: 's', 2: 'r', 3: 'm', 4: 'd', 5: 'x0', 6: 's2', 7: 'f', 8: 't', 9: 'p', 10: 'd2', 11: 'a', 12: 'p2', 13: 'r2', 14: 'a2', 15: 'c', 16: 'd3', 18: 't2', 19: 'c2', 21: 'f2', 22: 'p3', 24: 'x1', 25: 'x2', 27: 'n', 28: 'x3', 29: 'n2', 31: 'x4', 32: 'x5'}	
+(r / reach-01
+      :ARG0 (s2 / sue-02
+            :ARG1-of (f / file-01
+                  :ARG0 (p / person
+                        :ARG0-of (d2 / drive-01
+                              :ARG1 (t / taxi))
+                        :ARG0-of (a / accuse-01
+                              :ARG1 (p2 / police)
+                              :ARG2 (r2 / responsible-02
+                                    :ARG1 p2)
+                              :time (a2 / after
+                                    :op1 (c / catch-up-04
+                                          :ARG1 p
+                                          :ARG2 (t2 / tear-down-05
+                                                :ARG1 (p3 / person
+                                                      :ARG0-of (f2 / favor-01
+                                                            :ARG1 (c2 / criminal-organization
+                                                                  :name (n / name
+                                                                        :op1 "ISIS")))
+                                                      :name (n2 / name
+                                                            :op1 "Aaron"
+                                                            :op2 "Driver"))
+                                                :time (d3 / date-entity
+                                                      :month 8
+                                                      :year 2016)))))))
+            :ARG2 (m / monetary-quantity
+                  :quant 5000000
+                  :unit (d / dollar)))
+      :ARG1 (s / settle-02))

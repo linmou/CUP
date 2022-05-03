@@ -7,13 +7,17 @@ Download RAMS and WikiEvent datasets into ./data folder.
 
 ## Checkpoints
 Our checkpoints are available here.
+
 coming soon...
 
 ## Evaluation 
 Evaluate performance on RAMS
-'sh script/test_RAMS.sh'
+
+    script/test_RAMS.sh
+
 Evaluate performance on WikiEvents
-'sh script/test_Wikievents.sh'
+
+    sh script/test_Wikievents.sh
 
 
 ## Reimplement by yourself
@@ -22,6 +26,14 @@ In training stage, we utilize documental AMR graph. Hence, preprocess data first
 
 ### Coreference Resolution
 
-### Training
+### use your own AMR decoder or coreference resolutioner
+Process training data into the same form as data/WikiEvents/amrs/train.amr.txt and data/WikiEvents/corefered.json
 
+### Training
+To train on RAMS:
+
+    sh scripts/train_RAMS.sh
+to train on WikiEvents:
+
+    sh scripts/train_WikiEvents.sh
 

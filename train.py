@@ -183,10 +183,8 @@ def setup_all(args):
     dataset = {}
     if not args.eval_only:
         if args.dataset=='RAMS':
-            dataset['train'] = RAMSProcesser().get_train_examples(args.data_path, amr_path='./data/RAMS/amr/dev.amr.txt',data_part=args.data_part,
+            dataset['train'] = RAMSProcesser().get_train_examples(args.data_path,data_part=args.data_part,
                                                               ontology_file=args.ontology_file,k_shot=args.num_train_samples)
-        elif args.dataset=='NewsRoom':
-            dataset['train'] = NewsRoomAbstractFillingProcesser().get_train_examples(args.data_path)
         elif args.dataset=='wikievents':
             dataset['train'] = WikiEventProcesser().get_train_examples(args.data_path,use_info=False, ontology_file='event_role_wikievents.json',data_part=args.data_part
                                                                   )
@@ -209,8 +207,6 @@ def setup_all(args):
                                                                      ontology_file=args.ontology_file,k_shot=args.num_dev_samples)
             dataset['test'] = RAMSProcesser().get_test_examples(args.data_path, amr_path='./data/RAMS/amr/test.amr.txt',data_part=args.data_part,
                                                                 ontology_file=args.ontology_file,k_shot=args.num_test_samples)
-        elif args.dataset == 'NewsRoom':
-            raise NotImplemented
         elif args.dataset == 'wikievents':
             dataset['validation'] = WikiEventProcesser().get_dev_examples(args.data_path, use_info=False, ontology_file='event_role_wikievents.json',data_part=args.data_part)
             dataset['test'] = WikiEventProcesser().get_test_examples(args.data_path, use_info=False, ontology_file='event_role_wikievents.json',data_part=args.data_part)
@@ -548,7 +544,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     # args for dataloader
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--data_path", type=str, default='data/wikievents/informative')# RAMS/RAMSwithcoref toy/5 NewsRoom wikievents/informative wikievents/WikiwCoref five_sentence_samples
+    parser.add_argument("--data_path", type=str, default='data/wikievents/informative')
     parser.add_argument("--augment",type=bool,default=False,help='if use AmrGraph or other training set for multitask training')
     parser.add_argument("--max_seq_len",type=int,default=256,help='max_seq_len of prompt datalodaer')
     parser.add_argument("--decoder_max_len",type=int,default=128,help='max_decode_len of prompt datalodaer')
@@ -565,24 +561,24 @@ if __name__=='__main__':
     parser.add_argument("--eval_start",type=int,default=4)
     parser.add_argument("--train_batchsize",type=int,default=32)
     parser.add_argument("--eval_batchsize",type=int,default=32)
-    parser.add_argument("--model", type=str, default='bart')  # ConstrainedBart tested model are gpt2/t5
+    parser.add_argument("--model", type=str, default='bart')
     parser.add_argument("--model_name_or_path", default='../pretrained_models/'
                                                         'bart-base')
     parser.add_argument("--plm_eval_mode", action="store_true")
-    parser.add_argument("--cuda",default=True) #,action='store_true'
-    parser.add_argument("--storage_dir",type=str,default='experiments/wikiE/original_info/random')#'experiments/wikiE/original_info/CL/CUP_step0'
+    parser.add_argument("--cuda",default=True)
+    parser.add_argument("--storage_dir",type=str,default='experiments/wikiE/original_info/random')
     parser.add_argument("--eval_only",action="store_true",default=False)
     parser.add_argument("--train_only",action="store_true",default=False)
     parser.add_argument("--train_on_pretrained",action="store_true",default=False)
-    parser.add_argument("--ckptPath",type=str,default= 'experiments/wikiE/original_info/CL/CUP/Manual_bart_lr2e-05/E3_S900_P47.05') # experiments/augmented/base/CL/ablations/fine_grained_CL  # CL/CUP/Manual_bart_lr2e-05/E2_S795_P46.89
+    parser.add_argument("--ckptPath",type=str,default= 'experiments/wikiE/original_info/CL/CUP/Manual_bart_lr2e-05/E3_S900_P47.05')
     parser.add_argument("--num_train_samples",type=int)
     parser.add_argument("--num_dev_samples",type=int)
     parser.add_argument("--num_test_samples",type=int)
 
     # args for convert gen2out
-    parser.add_argument('--test-file', type=str,default='/wikievents/informative/test.jsonl') #RAMSwithcoref
+    parser.add_argument('--test-file', type=str,default='/wikievents/informative/test.jsonl')
     parser.add_argument('--output-file',type=str, default='./experiments/test_output.jsonl')
-    parser.add_argument('--ontology_file',type=str, default='wikievents_ontology.csv')# aida_ontology_cleaned.csv wikievents_ontology
+    parser.add_argument('--ontology_file',type=str, default='wikievents_ontology.csv')
     parser.add_argument('--head-only',action='store_true',default=False)
     parser.add_argument('--coref', action='store_true', default=False)
     parser.add_argument('--coref-file', type=str,)
@@ -617,7 +613,7 @@ if __name__=='__main__':
                         action='store_true',
                         help="Compute an error confusion matrix.")
     args = parser.parse_args()
-    args.gold_file = os.path.join(args.data_path, 'test.jsonl') # os.path.join(args.data_path, 'test.jsonl') # data/RAMS/pre_exp/test.jsonl
+    args.gold_file = os.path.join(args.data_path, 'test.jsonl')
     setup_seed(args.seed)
     if args.CL==True:
         curriculum_learnig(args)

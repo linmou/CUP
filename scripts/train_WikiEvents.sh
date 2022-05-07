@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 STORAGE=experiments/WikiEvents/CL
 python train.py \
-  --data_path=data/wikievents/WikiwCoref \
+  --data_path=data/wikievents/informative \
   --dataset=wikievents \
   --ontology_file=wikievents_ontology.json \
   --lr=1e-4 \

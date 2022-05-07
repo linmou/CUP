@@ -41,7 +41,7 @@ with open('/amr_based_prompt/data/wikievents/WikiwCoref/informative/train.jsonl'
             # no matter right or wrong, writedown amrs to take the space , so that the index of this file can be
             # consistent with downstream tasks
             all_amrs.extend(annotations[0])
-            # ipdb.set_trace()
+
 print(err)
 with open('/amr_based_prompt/data/wikievents/amr/train.amr.txt', 'w', encoding='utf8') as f:
     f.writelines(all_amrs)

@@ -26,7 +26,6 @@ from openprompt.utils.logging import logger
 from openprompt.data_utils.data_processor import DataProcessor
 
 from DocumentalAMR import DocumentalAmrGraph,load_amrs_to_graph,parse_RAMS,load_document_amr
-# from transition_amr_parser.parse import AMRParser
 
 class RAMSProcesser (DataProcessor):
 
@@ -367,9 +366,6 @@ class WikiEventProcesser(DataProcessor):
                 if use_arg:
                     arg_idx2text[arg_idx].append(arg_text)
 
-        # for arg_idx, text_list in arg_idx2text.items():
-        #     text = ' and '.join(text_list)
-        #     template = re.sub('<{}>'.format(arg_idx), text, template)
 
         ## select contents
         trigger = ex['event_mentions'][index]['trigger']
@@ -389,9 +385,6 @@ class WikiEventProcesser(DataProcessor):
                 context_words = context_words[start_idx: start_idx+self.MAX_CONTEXT_LENGTH]
                 # context_words = context_words[start_idx: end_idx]
                 offset = start_idx
-                # doc=spacier(' '.join(context_words))
-                # for sent in doc.sents:
-                #     document.append(sent)
 
             else:
                 # take a sliding window
@@ -447,10 +440,6 @@ class WikiEventProcesser(DataProcessor):
         for sid,sent in enumerate(doc.sents):
             if sid>=trg_pos-span_range and sid<=trg_pos+span_range:
                 contextls.append(sent.text)
-            # elif sid<trg_pos-span_range:
-            #     offset+= len(sent.text.split(' '))
-            #     trigger['start']-=len(sent.text.split(' ')) #
-            #     trigger['end'] -=len(sent.text.split(' '))
             if inner_boundary>=0 and sid >= trg_pos - inner_boundary and sid <= trg_pos + inner_boundary:
                 clues+=(' '+sent.text)
 
@@ -477,7 +466,6 @@ class WikiEventProcesser(DataProcessor):
 
         # develop gold template
         output_template=template
-        # ipdb.set_trace()
         argtp2argtxt=dict()
         for arg_idx, text_list in arg_idx2text.items():
             text = ' and '.join(text_list)
@@ -488,7 +476,7 @@ class WikiEventProcesser(DataProcessor):
         input_template = re.sub(r'<arg\d>', '<arg>', input_template)
         output_template = re.sub(r'<arg\d>', '<arg>', output_template)
 
-        return input_template, output_template, contextls, omitted_num, argtp2argtxt
+        return input_template, output_template, contextls,context_words, omitted_num, argtp2argtxt
 
     def get_examples(self, data_dir: Optional[str] = None, split: Optional[str] = None,data_part:str='full',recordAsRAMS=False,**kwarg) -> List[InputExample]:
         ontology_dict = self.load_ontology(kwarg['ontology_file'])
@@ -532,24 +520,49 @@ class WikiEventProcesser(DataProcessor):
                         span_range=4
                         inner_boundary=-1 # no inner boundary
 
-                    input_template, output_template, contextls,omitted_args,argtp2argtxt = self.create_gold_gen(ex, ontology_dict,
+                    input_template, output_template, contextls,context_words,omitted_args,argtp2argtxt = self.create_gold_gen(ex, ontology_dict,
                                                                                     index=i, ent2info=ent2info,
                                                                                     use_info=kwarg['use_info'],
                                                                                     span_range=span_range,inner_boundary=inner_boundary)
+                    if recordAsRAMS:
+                        trigger_span=[ex['event_mentions'][i]['trigger']['start'],ex['event_mentions'][i]['trigger']['end']-1] # -1 to fit the RAMS form, no need to -offset cause we hanled in create_gold_gen already
+                        evt_triggers=[[trigger_span[0],trigger_span[1],[[ex['event_mentions'][i]['event_type']]]]]
+                        entys={}
+                        for enty in ex['entity_mentions']:
+                            entys[enty['id']]=deepcopy(enty)
 
+                        ent_spans=[]
+                        gold_evt_links=[]
+                        for arg in ex['event_mentions'][i]['arguments']:
+                            start=entys[arg['entity_id']]['start']
+                            end=entys[arg['entity_id']]['end']
+                            ent_spans.append([start,end,[[arg['role'],1.0]]])
+                            gold_evt_links.append([trigger_span,[start,end],arg['role']])
 
-                    trigger_text=ex['event_mentions'][i]['trigger']['text']
-                    ttl_arg_num+=ex['event_mentions'][i]['arguments'].__len__()
-                    ttl_doc_tks+=len((' '.join(contextls)).split(' '))
-                    omitted_num+=omitted_args
+                        example = InputExample(guid=str(step) + '.' + str(i) + '.' + split, text_a=' '.join(contextls),
+                                               label=1,
+                                               tgt_text=output_template,
+                                               text_b=input_template,
+                                               meta={'doc_key':ex['event_mentions'][i]['id'],
+                                                     'gold_evt_links':gold_evt_links,
+                                                     'evt_triggers': evt_triggers, 'ent_spans': ent_spans,
+                                                     'sentences': context_words,
+                                                     }
+                                               )
 
-                    example = InputExample(guid=str(step)+'.'+ str(i) + '.' + split, text_a=' '.join(contextls), label=1,
-                                           tgt_text=output_template,
-                                           text_b=input_template,
-                                           meta={'evt_type':evt_type,'doc_key':ex['doc_id'],'evt_key':ex['event_mentions'][i]['id'],
-                                                'arguments':argtp2argtxt,'trigger_text':trigger_text,'sentences':contextls,
-                                                }
-                                           )
+                    else:
+                        trigger_text=ex['event_mentions'][i]['trigger']['text']
+                        ttl_arg_num+=ex['event_mentions'][i]['arguments'].__len__()
+                        ttl_doc_tks+=len((' '.join(contextls)).split(' '))
+                        omitted_num+=omitted_args
+
+                        example = InputExample(guid=str(step)+'.'+ str(i) + '.' + split, text_a=' '.join(contextls), label=1,
+                                               tgt_text=output_template,
+                                               text_b=input_template,
+                                               meta={'evt_type':evt_type,'doc_key':ex['doc_id'],'evt_key':ex['event_mentions'][i]['id'],
+                                                    'arguments':argtp2argtxt,'trigger_text':trigger_text,'sentences':contextls,
+                                                    }
+                                               )
                     examples.append(example)
                 if (step+1)%100==0:
                     print(f'{step+1} documents handled.')
@@ -561,31 +574,6 @@ class WikiEventProcesser(DataProcessor):
         return examples
 
 class AmrGraphProcesser(DataProcessor):
-    """
-    # TODO citation
-
-    Examples:
-
-    .. code-block:: python
-
-        from openprompt.data_utils.conditional_generation_dataset import PROCESSORS
-
-        base_path = "datasets/CondGen"
-
-        dataset_name = "webnlg_2017"
-        dataset_path = os.path.join(base_path, dataset_name)
-        processor = PROCESSORS[dataset_name.lower()]()
-        train_dataset = processor.get_train_examples(dataset_path)
-        valid_dataset = processor.get_train_examples(dataset_path)
-        test_dataset = processor.get_test_examples(dataset_path)
-
-        assert len(train_dataset) == 18025
-        assert len(valid_dataset) == 18025
-        assert len(test_dataset) == 4928
-        assert test_dataset[0].text_a == " | Abilene_Regional_Airport : cityServed : Abilene,_Texas"
-        assert test_dataset[0].text_b == ""
-        assert test_dataset[0].tgt_text == "Abilene, Texas is served by the Abilene regional airport."
-    """
 
     def __init__(self):
         super().__init__()
@@ -627,6 +615,8 @@ class AmrGraphProcesser(DataProcessor):
         assert 'train' in split , 'amr graphs are only contained in training data'
         examples, amrs = [], []
         path = os.path.join(data_dir, "{}.jsonl".format(split))
+        if not os.path.exists(path):
+            path = os.path.join(data_dir, "{}.jsonlines".format(split))
 
         with open(kwargs['amr_path'], encoding='utf8') as f:
             amrs = f.read()
@@ -819,17 +809,6 @@ class AmrGraphProcesser(DataProcessor):
                     if instance['gold_evt_links']!=[]:
                         arg_span_1st=list(arg_span2type.keys())[0]
                         NotFound=False
-                    # arg_span_1st as the nearest, also in the same sentence with trg
-                    # for arg_span in list(arg_span2type.keys()):
-                    #     try:
-                    #         if len(graph.tokens[0])+len(graph.tokens[1])<arg_span[0] and arg_span[1]< len(graph.tokens[0])+len(graph.tokens[1])+len(graph.tokens[2]):
-                    #             arg_span_1st=arg_span
-                    #             NotFound=False
-                    #             break
-                    #     except:
-                    #         assert len(graph.tokens)<2
-                    #         pass
-
 
                     if NotFound:
                         if instance['gold_evt_links']!=[]:
@@ -867,7 +846,6 @@ class AmrGraphProcesser(DataProcessor):
                         # pred arg_1st
                         # maskedT2Apath_text=T2Apath_text.replace(arg_1st,'<arg>')
 
-
                         A2ApathExist = False
                         for arg_span in list(arg_span2type.keys()):
                             if arg_span==arg_span_1st: continue
@@ -875,16 +853,12 @@ class AmrGraphProcesser(DataProcessor):
                             if A2Apath != None and len(A2Apath) != 1:
                                 A2ApathExist=True
                                 A2Apath_text, intersentence, arg_text, end = self.print_path(A2Apath, sentences_tk)
-                                # A2Apath_text=' '.join(A2Apath_text).replace(arg_text,arg_text+' '+ arg_span2type[arg_span])
-                                # maskedA2Apath_text=A2Apath_text.replace(arg_text,'<arg>')
-                                # A2Apath_text=A2Apath_text.replace(arg_1st,arg_1st+' '+ arg_span2type[arg_span_1st])
                                 full_path = T2Apath_text
                                 for text in A2Apath_text:
                                     if text not in T2Apath_text:
                                         full_path += ' ' + text
                                 full_path = full_path.replace(arg_text, arg_text + ' ' + arg_span2type[arg_span])
                                 full_masked_path=full_path.replace(arg_text, '<arg>')
-                                # full_masked_path=maskedT2Apath_text+' ' +maskedA2Apath_text
                                 example = InputExample(guid=str(i) + '.' + split, label=1,
                                                        text_a=' '.join(sentences_tk).replace(trigger_text,
                                                                                              '<trg>' + trigger_text + '<trg>'),
@@ -907,8 +881,6 @@ class AmrGraphProcesser(DataProcessor):
                                 for text in new_T2Apath_text:
                                     if text not in T2Apath_text:
                                         full_path+=' '+text
-                                # new_T2Apath_text = ' '.join(T2Apath_text).replace(arg_text,
-                                #                                               arg_text + ' ' + arg_span2type[arg_span])
                                 full_path=full_path.replace(arg_text,arg_text + ' ' + arg_span2type[arg_span])
 
                                 example = InputExample(guid=str(i) + '.' + split, label=1,
@@ -930,7 +902,6 @@ class AmrGraphProcesser(DataProcessor):
                         arg_text = ' '.join(sentences_tk[arg_span[0]:arg_span[1] + 1])
                         arg_type = re.split('[\d]+', links[2])[-1]
                         path = graph.BFS((trg_span[0], trg_span[1] + 1), (arg_span[0], arg_span[1] + 1))
-
 
                         if path == None or len(path) == 1:
                             err += 1
@@ -967,14 +938,13 @@ class AmrGraphProcesser(DataProcessor):
 
 
 if __name__=='__main__':
-    examples=WikiEventProcesser().get_examples(data_dir='./data/wikievents/', split='test', use_info=True,
+    examples=WikiEventProcesser().get_examples(data_dir='./data/wikievents/informative', split='train', use_info=True,
                                                ontology_file='event_role_wikievents.json',data_part='full',recordAsRAMS=True)
-    instances_with_path=[]
+    exampleInspection=[]
     ttl_sent=0
     for ex in examples:
-        instance={**{'path':ex.tgt_text,'query':ex.text_b,'doc':ex.text_a},**ex.meta}
-        instances_with_path.append(instance)
-    os.makedirs('PathInspectors',exist_ok=True)
-    with open('PathInspectors/PathInspector_WikiE_test.jsonl','w') as f:
-        f.writelines((json.dumps(ist)+'\n' for ist in instances_with_path))
+        instance=ex.meta
+        exampleInspection.append(instance)
+    with open('./data/wikievents/informative/train.jsonl','w') as f:
+        f.writelines((json.dumps(ex)+'\n' for ex in exampleInspection))
 

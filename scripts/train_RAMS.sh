@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 STORAGE=experiments/RAMS/CL
 python train.py --augment \
-  --data_path=data/RAMS/RAMSwithcoref \
+  --data_path=data/RAMS \
   --dataset=RAMS \
   --ontology_file=aida_ontology_cleaned.csv \
   --lr=1e-4 \

@@ -197,15 +197,15 @@ def setup_all(args):
                                                                                ontology_file='wikievents_ontology.csv',path_method=args.path_method,)
             elif args.dataset=='RAMS':
                 dataset['AmrGraph_train'] = AmrGraphProcesser().get_train_examples(
-                    args.data_path,  #
+                    'data/RAMS/RAMSwithcoref',
                     amr_path=f'./data/{args.dataset}/amr/train.amr.txt', dataset=args.dataset,
                     ontology_file='aida_ontology_cleaned.csv', path_method=args.path_method, )
 
     if not args.train_only:
         if args.dataset == 'RAMS':
-            dataset['validation'] = RAMSProcesser().get_dev_examples(args.data_path, amr_path='./data/RAMS/amr/dev.amr.txt',data_part=args.data_part,
+            dataset['validation'] = RAMSProcesser().get_dev_examples(args.data_path,data_part=args.data_part,
                                                                      ontology_file=args.ontology_file,k_shot=args.num_dev_samples)
-            dataset['test'] = RAMSProcesser().get_test_examples(args.data_path, amr_path='./data/RAMS/amr/test.amr.txt',data_part=args.data_part,
+            dataset['test'] = RAMSProcesser().get_test_examples(args.data_path,data_part=args.data_part,
                                                                 ontology_file=args.ontology_file,k_shot=args.num_test_samples)
         elif args.dataset == 'wikievents':
             dataset['validation'] = WikiEventProcesser().get_dev_examples(args.data_path, use_info=False, ontology_file='event_role_wikievents.json',data_part=args.data_part)

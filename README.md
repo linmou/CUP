@@ -12,7 +12,7 @@ Download them into ./experiments
 ## Evaluation 
 Evaluate performance on RAMS
 
-    script/test_RAMS.sh
+    sh script/test_RAMS.sh
 
 Evaluate performance on WikiEvents
 
@@ -38,8 +38,7 @@ For RAMS:
     python ./data/preprocess.py --train_dir=./data/RAMS/train.jsonlines --coref_dir=./data/RAMS/corefered.json --output_dir=./data/RAMS/RAMSwithcore/train.jsonl
 
 For WikiEvents: 
-
-    python DataProcessers.py # First transform WikiEvent data into RAMS form  
+ 
     python ./data/preprocess.py --train_dir=./data/wikievents/informative/train.jsonl --coref_dir=./data/wikievents/corefered.json --output_dir=./data/wikievents/WikiwCoref/informative/train.jsonl
 
 ### Training
@@ -53,4 +52,7 @@ Train on RAMS:
 Train on WikiEvents:
 
     sh scripts/train_WikiEvents.sh
+
+##Citation
+Please cite our work if this respository inspires you.
 

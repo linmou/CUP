@@ -1,4 +1,4 @@
-#CUP
+## CUP
 This repository is for CUP: Curriculum Learning based Prompt Tuning for Implicit Event Argument Extraction
 
 
@@ -53,6 +53,6 @@ Train on WikiEvents:
 
     sh scripts/train_WikiEvents.sh
 
-##Citation
+## Citation
 Please cite our work if this respository inspires you.
 
